@@ -172,22 +172,30 @@ export default {
     }
   },
   methods: {
+    // Method to get product suggestions based on productName, user email, and department
     async getProductSuggestions() {
       if (this.productName.trim() === "") {
         this.showSuggestions = false;
         return;
       }
       try {
-        const response = await fetch(
-          `http://localhost:3000/fetchProducts?productName=${this.productName}`
-        );
-        const data = await response.json();
-        this.suggestedProducts = data;
-        this.showSuggestions = true;
+        // Get user info from sessionStorage
+        const userData = JSON.parse(sessionStorage.getItem("userData"));
+        if (userData && userData.email) {
+          const response = await fetch(
+            `http://localhost:3000/fetchProducts?email=${userData.email}&productName=${this.productName}`
+          );
+          const data = await response.json();
+          this.suggestedProducts = data;
+          this.showSuggestions = true;
+        } else {
+          throw new Error("User data or email not found in sessionStorage");
+        }
       } catch (error) {
         console.error("Error fetching product suggestions:", error);
       }
     },
+
     addProduct(product) {
       this.selectedProducts.push(product);
       this.productName = "";
@@ -357,13 +365,16 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 10px; /* Adjust as needed */
+  padding-bottom: 10px;
+  /* Adjust as needed */
 }
 
 .header-container h2 {
   text-align: center;
-  margin: 0; /* Remove default margin */
-  flex: 1; /* Allow h2 to take remaining space */
+  margin: 0;
+  /* Remove default margin */
+  flex: 1;
+  /* Allow h2 to take remaining space */
   font-weight: 900;
 }
 
@@ -371,9 +382,12 @@ export default {
   background-color: rgb(178, 50, 50);
   color: #fff;
   border: none;
-  border-radius: 50%; /* Make it circular */
-  width: 20px; /* Set a fixed width for the circle */
-  height: 20px; /* Set a fixed height for the circle */
+  border-radius: 50%;
+  /* Make it circular */
+  width: 20px;
+  /* Set a fixed width for the circle */
+  height: 20px;
+  /* Set a fixed height for the circle */
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -392,15 +406,18 @@ export default {
 .form-wrapper {
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Ensures the form is centered vertically */
-  margin: 0 1in; /* 1-inch margin on all sides */
+  height: 100vh;
+  /* Ensures the form is centered vertically */
+  margin: 0 1in;
+  /* 1-inch margin on all sides */
   margin: 0;
   padding: 0;
   background: #e3e3e2;
 }
 
 .form-title {
-  font-size: 24px; /* Adjusted font size for the form title */
+  font-size: 24px;
+  /* Adjusted font size for the form title */
   font-weight: 600;
   text-align: center;
   padding-bottom: 6px;
@@ -420,17 +437,20 @@ export default {
 }
 
 .main-product-info {
-  padding: 15px 0; /* Reduced padding for product info section */
+  padding: 15px 0;
+  /* Reduced padding for product info section */
 }
 
 .product-input-box {
-  margin-bottom: 10px; /* Reduced margin between input boxes */
+  margin-bottom: 10px;
+  /* Reduced margin between input boxes */
   min-width: 500px;
 }
 
 .product-input-box label {
   color: #111827;
-  font-size: 16px; /* Reduced font size for labels */
+  font-size: 16px;
+  /* Reduced font size for labels */
   font-weight: 600;
   margin: 5px 0;
   font-family: "Poppins", sans-serif;
@@ -443,93 +463,115 @@ export default {
 .product-input-box .label-icon {
   width: 20px;
   margin-right: 10px;
-  align-self: center; /* Align the icon vertically */
+  align-self: center;
+  /* Align the icon vertically */
 }
 
 .product-input-box input,
 .product-input-box select.styled-select {
-  height: 40px; /* Maintained input height */
-  width: 100%; /* Full width for input fields */
-  border-radius: 5px; /* Adjusted border-radius */
+  height: 40px;
+  /* Maintained input height */
+  width: 100%;
+  /* Full width for input fields */
+  border-radius: 5px;
+  /* Adjusted border-radius */
   outline: none;
   border: 1px solid rgb(8, 8, 8);
-  padding: 0 5px; /* Reduced padding for inputs */
+  padding: 0 5px;
+  /* Reduced padding for inputs */
   background: transparent;
   -webkit-text-fill-color: #000000;
   -webkit-text-stroke-color: #030303;
-  color: #000000; /* Text color for consistency */
+  color: #000000;
+  /* Text color for consistency */
 }
 
 .product-input-box textarea {
-  height: 100px; /* Maintained input height */
-  width: 100%; /* Full width for input fields */
-  border-radius: 5px; /* Adjusted border-radius */
+  height: 100px;
+  /* Maintained input height */
+  width: 100%;
+  /* Full width for input fields */
+  border-radius: 5px;
+  /* Adjusted border-radius */
   outline: none;
   border: 1px solid rgb(8, 8, 8);
-  padding: 0 5px; /* Reduced padding for inputs */
+  padding: 0 5px;
+  /* Reduced padding for inputs */
   background: transparent;
   -webkit-text-fill-color: #000000;
   -webkit-text-stroke-color: #030303;
-  color: #000000; /* Text color for consistency */
+  color: #000000;
+  /* Text color for consistency */
 }
+
 .form-submit-btn {
-  margin-top: 30px; /* Reduced margin for submit button */
+  margin-top: 30px;
+  /* Reduced margin for submit button */
 }
 
 .form-submit-btn button {
   display: block;
   width: 100%;
-  font-size: 18px; /* Adjusted font size for submit button */
-  padding: 10px; /* Reduced padding for submit button */
+  font-size: 18px;
+  /* Adjusted font size for submit button */
+  padding: 10px;
+  /* Reduced padding for submit button */
   border: none;
   border-radius: 10px 10px 10px;
   color: #111827;
-  font-family: "Roboto", sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-weight: bold;
-  background: #b8b6b4;
-  cursor: pointer; /* Change cursor on hover */
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
+  background: linear-gradient(to bottom, #846ea9, #b9a7d8);
+  cursor: pointer;
+  /* Change cursor on hover */
+ 
   border-radius: 30px;
   padding: 10px 20px;
 }
 
 .form-submit-btn button:hover {
-  background-color: #7f7e7d;
+  background-color: linear-gradient(to bottom, #270561, #4f16b1);
   color: rgb(255, 255, 255);
 }
+
 
 /* Hover and focus styles for dropdown menus */
 .product-input-box select.styled-select:hover,
 .product-input-box select.styled-select:focus {
-  background-color: #949392; /* Match background color on hover/focus */
+  background-color: #949392;
+  /* Match background color on hover/focus */
   color: black;
 }
 
 .popup {
   width: 50%;
-  background-color: rgb(248, 241, 241);
+  background-color: #f5efff;
   padding: 20px;
   box-shadow: 4px 4px 6px 0 rgba(57, 57, 57, 0.3), -4px -4px 6px 0 rgba(62, 62, 62, 0.2),
     inset -4px -4px 6px 0 rgba(0, 0, 0, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
   padding: 10px 20px;
-  max-height: 90vh; /* Adjust maximum height as needed */
+  max-height: 90vh;
+  /* Adjust maximum height as needed */
   overflow-y: auto;
 }
 
 .popup::-webkit-scrollbar {
-  width: 10px; /* width of the entire scrollbar */
+  width: 10px;
+  /* width of the entire scrollbar */
 }
 
 .popup::-webkit-scrollbar-track {
-  background: #fff; /* color of the tracking area */
+  background: #fff;
+  /* color of the tracking area */
 }
 
 .popup::-webkit-scrollbar-thumb {
-  background-color: #000000; /* color of the scroll thumb */
-  border-radius: 20px; /* roundness of the scroll thumb */
-  border: 3px solid rgb(255, 255, 255); /* creates padding around scroll thumb */
+  background-color: #000000;
+  /* color of the scroll thumb */
+  border-radius: 20px;
+  /* roundness of the scroll thumb */
+  border: 3px solid rgb(255, 255, 255);
+  /* creates padding around scroll thumb */
 }
 
 .popup form {
@@ -582,15 +624,21 @@ export default {
   font-size: 14px;
   background: #bdbcbc28;
   color: #000;
-  border-radius: 8px; /* Adjust the value for desired roundness */
+  border-radius: 8px;
+  /* Adjust the value for desired roundness */
   border: 2px solid rgb(96, 92, 92);
   font-weight: 700;
-  padding: 10px; /* Adjust padding as needed */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add shadow */
+  padding: 10px;
+  /* Adjust padding as needed */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Add shadow */
 }
+
 .cross-icon {
-  color: red; /* Customize icon color */
-  cursor: pointer; /* Show pointer cursor on hover */
+  color: red;
+  /* Customize icon color */
+  cursor: pointer;
+  /* Show pointer cursor on hover */
 }
 
 .manual-btn {

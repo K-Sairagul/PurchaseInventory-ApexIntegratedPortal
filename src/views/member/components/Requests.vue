@@ -262,7 +262,7 @@ body {
   margin-top: 60px;
   padding: 2px 1.5rem;
   min-height: calc(100vh - 60px);
-  background: #e3e3e2;
+  background: #f5efff;
   border-radius: 5px;
   margin-left: 345px;
   transition: margin-left 300ms;
@@ -344,12 +344,11 @@ body {
   border-radius: 30px;
   padding: 10px 20px;
 }
-
 .table thead th {
-  color: #fff;
+  color: #1a1a60;
   position: sticky;
   top: 0;
-  background: #000000; /* Light gray background */
+  background: #c6b3e8;
   z-index: 1; /* Ensure header stays above content */
 }
 
@@ -458,7 +457,7 @@ tr td {
 }
 
 .request-container {
-  background: #c7c4c4;
+  background: linear-gradient(to bottom, #846ea9, #b9a7d8);
   height: 45px;
   width: fit-content;
   margin-bottom: 20px;
@@ -469,10 +468,6 @@ tr td {
   align-items: center;
   cursor: pointer;
   transition: 0.8s;
-  text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
 }
 
 .request-container:hover > .search-input {
@@ -490,7 +485,7 @@ tr td {
 }
 
 .request-container .search-btn .fas {
-  color: #5cbdbb;
+  color: #000000;
 }
 
 .rupee-icon {
@@ -516,6 +511,10 @@ tr td {
 }
 .status.red {
   background: red;
+}
+
+.status.green {
+  background: green;
 }
 
 td .status {

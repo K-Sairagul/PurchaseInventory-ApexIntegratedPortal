@@ -11,8 +11,8 @@
         title="Buy Products"
       />
       <main>
-         <!-- Edit Popup Component -->
-         <EditPopup
+        <!-- Edit Popup Component -->
+        <EditPopup
           :product="selectedProduct"
           :reqNo="selectedReqNo"
           @update-product-success="updateProductSuccess"
@@ -20,7 +20,7 @@
           @close="closeEditPopup"
         />
         <!-- Alert Component -->
-        
+
         <div class="custom-alert" v-if="showAlert">
           <div class="alert-content">
             <p>Product Updated</p>
@@ -74,14 +74,24 @@
                       <td>{{ product.quantityNeeded }}</td>
                       <td>{{ product.description }}</td>
                       <td>
-                        <a v-if="isLinkValid" :href="formatLink(product.link)" target="_blank" rel="noopener noreferrer">
+                        <a
+                          v-if="isLinkValid"
+                          :href="formatLink(product.link)"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           <i class="fas fa-external-link-alt mr-1"></i>
                         </a>
                         <i v-else class="fas fa-external-link-alt mr-1 text-muted"></i>
                       </td>
                       <td>
                         <template v-if="product.status === 0">
-                          <button class="edit" @click="openEditPopup(product, request.reqNo)">Edit</button>
+                          <button
+                            class="edit"
+                            @click="openEditPopup(product, request.reqNo)"
+                          >
+                            Edit
+                          </button>
                         </template>
                         <template v-else>
                           <span class="status green"></span>Link updated
@@ -104,8 +114,6 @@
   </body>
 </template>
 
-
-
 <script>
 import SidebarMain from "@/views/head/components/Sidebar.vue";
 import HeaderMain from "@/views/head/components/HeaderMain.vue";
@@ -121,7 +129,8 @@ export default {
   data() {
     return {
       userProfile: {
-        profilePhoto: "https://i.pinimg.com/736x/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.jpg",
+        profilePhoto:
+          "https://i.pinimg.com/736x/6b/aa/98/6baa98cc1c3f4d76e989701746e322dd.jpg",
       },
       userName: "",
       userRole: "",
@@ -153,10 +162,10 @@ export default {
     },
     formatLink(link) {
       if (!link) {
-        return '#'; // or any default URL or error handling
+        return "#"; // or any default URL or error handling
       }
-      if (!link.startsWith('http://') && !link.startsWith('https://')) {
-        return 'https://' + link;
+      if (!link.startsWith("http://") && !link.startsWith("https://")) {
+        return "https://" + link;
       }
       return link;
     },
@@ -166,12 +175,12 @@ export default {
         const data = await response.json();
 
         // Get the stored user data from session storage
-        const userData = JSON.parse(sessionStorage.getItem('userData'));
+        const userData = JSON.parse(sessionStorage.getItem("userData"));
         const userEmail = userData ? userData.email : null;
 
         // Filter the data based on the email
-        this.requests = data.filter(item => item.email === userEmail);
-        
+        this.requests = data.filter((item) => item.email === userEmail);
+
         // Process the filtered data
         this.filterData();
       } catch (error) {
@@ -185,7 +194,6 @@ export default {
         products: item.products,
       }));
     },
-
   },
   computed: {
     filteredProducts() {
@@ -213,8 +221,8 @@ export default {
     },
   },
   isLinkValid() {
-      return this.product.link && this.product.link.length > 0;
-    },
+    return this.product.link && this.product.link.length > 0;
+  },
   async mounted() {
     try {
       const userData = JSON.parse(sessionStorage.getItem("userData"));
@@ -322,7 +330,7 @@ td {
   margin-top: 60px;
   padding: 2px 1.5rem;
   min-height: calc(100vh - 60px);
-  background: #e3e3e2;
+  background: #f5efff;
   border-radius: 5px;
   margin-left: 345px;
   transition: margin-left 300ms;
@@ -418,20 +426,17 @@ td {
 
 /* Apply styles to table header cells */
 .table thead {
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
   border-radius: 30px;
   padding: 10px 20px;
 }
 
 .table thead th {
-  color: #fff;
+  color: #1a1a60;
   position: sticky;
-  text-align: center;
   top: 0;
-  background: #000000; /* Light gray background */
-  z-index: 1; /* Ensure header stays above content */
+  background: #c6b3e8;
+  z-index: 1;
+  /* Ensure header stays above content */
 }
 
 th,
@@ -553,7 +558,7 @@ tr td {
 }
 
 .request-container {
-  background: #c7c4c4;
+  background: linear-gradient(to bottom, #846ea9, #b9a7d8);
   height: 45px;
   width: fit-content;
   margin-bottom: 20px;
@@ -564,10 +569,6 @@ tr td {
   align-items: center;
   cursor: pointer;
   transition: 0.8s;
-  text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
 }
 
 .request-container:hover > .search-input {
@@ -585,7 +586,7 @@ tr td {
 }
 
 .request-container .search-btn .fas {
-  color: #5cbdbb;
+  color: #000000;
 }
 
 .rupee-icon {
@@ -702,7 +703,6 @@ td .status {
   background-color: #45a049;
 }
 
-
 .custom-alert {
   position: fixed;
   top: 50%;
@@ -714,7 +714,7 @@ td .status {
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
   padding: 20px;
   z-index: 1000;
-  font-family: 'Segoe UI', Arial, sans-serif; /* Fancy font family */
+  font-family: "Segoe UI", Arial, sans-serif; /* Fancy font family */
 }
 
 .alert-content {
@@ -731,7 +731,7 @@ button {
   background-color: #e0e0e0; /* Very light gray background */
   color: #333; /* Dark text color */
   cursor: pointer;
-  font-family: 'Segoe UI', Arial, sans-serif; /* Fancy font family */
+  font-family: "Segoe UI", Arial, sans-serif; /* Fancy font family */
   transition: background-color 0.3s ease; /* Smooth hover effect */
 }
 

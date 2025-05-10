@@ -1,0 +1,13 @@
+{
+    "Department": [
+        "Computer Science",
+        "Information Technology",
+        "Elecrical And Electronics",
+        "Computer Technology"
+    ],
+    "Special Labs": [
+        "Mobile App Development",
+        "AI Lab",
+        "AR/VR Lab"
+    ]
+}

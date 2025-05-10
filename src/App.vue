@@ -6,15 +6,14 @@
       </keep-alive>
     </router-view>
   </div>
-  </template>
-  
-  <script>
-  export default {
-    // Add any necessary logic here
-  }
-  </script>
-  
-  <style>
-  /* Add your global styles here */
-  </style>
-  
+</template>
+
+<script>
+export default {
+  // Add any necessary logic here
+};
+</script>
+
+<style>
+/* Add your global styles here */
+</style>

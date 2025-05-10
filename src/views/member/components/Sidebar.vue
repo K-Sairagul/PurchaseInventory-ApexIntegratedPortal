@@ -9,31 +9,27 @@
       <ul>
         <li :class="{ active: isActive('/dashboard/member') }">
           <router-link to="/dashboard/member" @click="setActive('/dashboard/member')">
-            <span class="las la-igloo"></span><span>Dashboard</span>
+            <span class="las la-igloo"></span> <span>Dashboard</span>
           </router-link>
         </li>
         <li :class="{ active: isActive('/dashboard/product_public') }">
-          <router-link
-            to="/dashboard/product_public"
-            @click="setActive('/dashboard/product_public')"
-          >
-            <span class="las la-users"></span><span>Product</span>
+          <router-link to="/dashboard/product_public" @click="setActive('/dashboard/product_public')">
+            <span class="las la-box"></span> <span>Product</span>
           </router-link>
         </li>
         <li :class="{ active: isActive('/dashboard/request_member') }">
-          <router-link
-            to="/dashboard/request_member"
-            @click="setActive('/dashboard/request_member')"
-          >
-            <i class="fas fa-paper-plane mr-4"></i><span>Request</span>
+          <router-link to="/dashboard/request_member" @click="setActive('/dashboard/request_member')">
+            <span class="las la-paper-plane mr-2"></span> <span>Request</span>
           </router-link>
         </li>
         <li :class="{ active: isActive('/dashboard/buy_product_member') }">
-          <router-link
-            to="/dashboard/buy_product_member"
-            @click="setActive('/dashboard/buy_product_member')"
-          >
-            <span class="fas fa-shopping-bag"></span><span>Buy</span>
+          <router-link to="/dashboard/buy_product_member" @click="setActive('/dashboard/buy_product_member')">
+            <span class="las la-shopping-bag mr-2"></span> <span>Buy</span>
+          </router-link>
+        </li>
+        <li :class="{ active: isActive('/dashboard/borrowed_Products_Member') }">
+          <router-link to="/dashboard/borrowed_Products_Member" @click="setActive('/dashboard/borrowed_Products_Member')">
+            <span class="las la-handshake mr-2"></span> <span>Borrowed</span>
           </router-link>
         </li>
       </ul>
@@ -68,8 +64,10 @@ export default {
 <style scoped>
 .img-inventory {
   width: 40px;
-  height: 40px; /* Adjust height as needed */
-  margin-right: 10px; /* Add spacing between image and text */
+  height: 40px;
+  /* Adjust height as needed */
+  margin-right: 10px;
+  /* Add spacing between image and text */
 }
 
 * {
@@ -86,7 +84,7 @@ export default {
   height: 100%;
   left: 0;
   top: 0;
-  background: #838282;
+  background: #e5d9f2;
   z-index: 100;
   transition: width 300ms;
 }
@@ -104,8 +102,10 @@ export default {
 }
 
 .slidebar-brand h2 {
-  font-family: "Kalam", sans-serif; /* Use Kalam font */
-  font-weight: 700; /* Bold weight */
+  font-family: "Kalam", sans-serif;
+  /* Use Kalam font */
+  font-weight: 700;
+  /* Bold weight */
   display: flex;
   font-size: 30px;
   align-items: center;
@@ -124,7 +124,7 @@ export default {
 .sliderbar-menu a {
   padding-left: 1rem;
   display: block;
-  color: #f5f5f5;
+  color: #1a1a60;
   font-size: 1.1rem;
 }
 
@@ -136,39 +136,41 @@ export default {
 .sliderbar-menu li.active {
   padding-top: 1rem;
   padding-bottom: 1rem;
-  background: rgb(58, 58, 58);
+  background: rgb(205, 193, 255);
   box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
     inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
   padding: 10px 20px;
   border-radius: 30px 0px 0px 30px;
 }
 
-#nav-toggle:checked + .slidebar {
+#nav-toggle:checked+.slidebar {
   width: 70px;
 }
 
-#nav-toggle:checked + .slidebar .slidebar-brand,
-#nav-toggle:checked + .slidebar li {
+#nav-toggle:checked+.slidebar .slidebar-brand,
+#nav-toggle:checked+.slidebar li {
   padding-left: 1rem;
 }
 
-#nav-toggle:checked + .slidebar li a {
+#nav-toggle:checked+.slidebar li a {
   padding-left: 0rem;
 }
 
-#nav-toggle:checked + .slidebar .slidebar-brand h2 span:last-child,
-#nav-toggle:checked + .slidebar li a span:last-child {
+#nav-toggle:checked+.slidebar .slidebar-brand h2 span:last-child,
+#nav-toggle:checked+.slidebar li a span:last-child {
   display: none;
 }
 
-#nav-toggle:checked ~ .main-content {
+#nav-toggle:checked~.main-content {
   margin-left: 70px;
 }
 
-#nav-toggle:checked ~ .main-content header {
-  width: calc(100% - 70px); /* Corrected */
+#nav-toggle:checked~.main-content header {
+  width: calc(100% - 70px);
+  /* Corrected */
   left: 70px;
 }
+
 .main-content {
   transition: margin-left 300ms;
   margin-left: 345px;
@@ -282,6 +284,7 @@ main {
 .card-single:last-child {
   background: #838282;
 }
+
 .card-single:last-child h1,
 .card-single:last-child div:first-child span,
 .card-single:last-child div:first-child {
@@ -327,12 +330,14 @@ main {
   background-color: #c8c8c8d9;
   border-radius: 5px;
 }
+
 .task-header {
   padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .task-body {
   display: flex;
   flex-direction: column;
@@ -343,35 +348,46 @@ main {
 
 .todo-list {
   display: flex;
-  justify-content: space-between; /* Space items evenly */
-  align-items: center; /* Align items vertically */
-  width: 100%; /* Ensure full width */
+  justify-content: space-between;
+  /* Space items evenly */
+  align-items: center;
+  /* Align items vertically */
+  width: 100%;
+  /* Ensure full width */
 }
+
 .add-input {
   width: 80%;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 50px;
   font-size: 16px;
-  outline: none; /* Remove default focus outline */
-  transition: border-color 0.3s ease; /* Smooth transition for border color */
-  cursor: pointer; /* Custom cursor */
+  outline: none;
+  /* Remove default focus outline */
+  transition: border-color 0.3s ease;
+  /* Smooth transition for border color */
+  cursor: pointer;
+  /* Custom cursor */
 }
 
 /* Style for the input box when focused */
 .add-input:focus {
-  border-color: #007bff; /* Change border color on focus */
+  border-color: #007bff;
+  /* Change border color on focus */
 }
 
 .add-button {
-  width: 20%; /* Set button width to 20% */
-  margin-left: 10px; /* Add margin as needed */
+  width: 20%;
+  /* Set button width to 20% */
+  margin-left: 10px;
+  /* Add margin as needed */
 }
 
 ul {
   list-style-type: none;
   padding: 0;
 }
+
 li {
   margin-bottom: 8px;
 }
@@ -393,6 +409,7 @@ li {
 .plus-icon:hover:active {
   background-color: #218838;
 }
+
 .remove-btn {
   font-size: 1.5rem;
   border-radius: 50%;
@@ -414,22 +431,30 @@ li {
 }
 
 .task-table {
-  width: 100%; /* Ensure the table takes full width */
+  width: 100%;
+  /* Ensure the table takes full width */
   margin-top: 2%;
 }
 
 .task-table th {
-  padding: 8px; /* Adjust padding as needed */
-  text-align: left; /* Align text to the left */
+  padding: 8px;
+  /* Adjust padding as needed */
+  text-align: left;
+  /* Align text to the left */
 }
 
 .task-table td.task-name-cell {
-  width: 80%; /* Set 80% width for task name cells */
-  padding: 8px; /* Adjust padding as needed */
+  width: 80%;
+  /* Set 80% width for task name cells */
+  padding: 8px;
+  /* Adjust padding as needed */
 }
+
 .task-table td.action-cell {
-  width: 20%; /* Set 20% width for action cells */
-  text-align: center; /* Center align content in action cells */
+  width: 20%;
+  /* Set 20% width for action cells */
+  text-align: center;
+  /* Center align content in action cells */
 }
 
 /* */
@@ -473,6 +498,7 @@ tr td:last-child {
 .status.pink {
   background: deeppink;
 }
+
 .status.orange {
   background: orangered;
 }
@@ -488,10 +514,12 @@ tr td:last-child {
   align-items: center;
   padding: 0.5rem 0.7rem;
 }
+
 .info {
   display: flex;
   align-items: center;
 }
+
 .info img {
   border-radius: 50%;
   margin-right: 1rem;
@@ -539,7 +567,8 @@ tr td:last-child {
   }
 
   .main-content header {
-    width: calc(100% - 70px); /* Corrected */
+    width: calc(100% - 70px);
+    /* Corrected */
     left: 70px;
   }
 
@@ -629,35 +658,36 @@ tr td:last-child {
     left: 0 !important;
   }
 
-  #nav-toggle:checked + .slidebar {
+  #nav-toggle:checked+.slidebar {
     left: 0 !important;
     z-index: 100;
     width: 345px;
   }
 
-  #nav-toggle:checked + .slidebar .slidebar-brand,
-  #nav-toggle:checked + .slidebar li {
+  #nav-toggle:checked+.slidebar .slidebar-brand,
+  #nav-toggle:checked+.slidebar li {
     padding-left: 2rem;
     text-align: left;
   }
 
-  #nav-toggle:checked + .slidebar li a {
+  #nav-toggle:checked+.slidebar li a {
     padding-left: 1rem;
   }
 
-  #nav-toggle:checked + .slidebar .slidebar-brand h2 span:last-child,
-  #nav-toggle:checked + .slidebar li a span:last-child {
+  #nav-toggle:checked+.slidebar .slidebar-brand h2 span:last-child,
+  #nav-toggle:checked+.slidebar li a span:last-child {
     display: inline;
   }
 
-  #nav-toggle:checked ~ .main-content {
+  #nav-toggle:checked~.main-content {
     margin-left: 0rem !important;
   }
 
-  #nav-toggle:checked + .slidebar h2 {
+  #nav-toggle:checked+.slidebar h2 {
     display: none;
   }
-  #nav-toggle:checked + .slidebar .sliderbar-menu {
+
+  #nav-toggle:checked+.slidebar .sliderbar-menu {
     justify-content: space-between;
     align-items: center;
     margin-left: 10;
@@ -668,18 +698,19 @@ tr td:last-child {
   .cards {
     grid-template-columns: 100%;
   }
-  #nav-toggle:checked + .slidebar {
+
+  #nav-toggle:checked+.slidebar {
     left: 0 !important;
     z-index: 100;
     width: 150px;
   }
 
-  #nav-toggle:checked + .slidebar li {
+  #nav-toggle:checked+.slidebar li {
     padding-left: 2rem;
     text-align: left;
   }
 
-  #nav-toggle:checked + .slidebar li a {
+  #nav-toggle:checked+.slidebar li a {
     padding-left: 1rem;
     font-size: 12px;
   }

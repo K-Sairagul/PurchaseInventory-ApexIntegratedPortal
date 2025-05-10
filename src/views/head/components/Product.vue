@@ -1,113 +1,95 @@
 <template>
   <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta
-        name="viewport"
-        content="width=device-width,initial-scale=1,maximum-scale=1"
-      />
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-      />
-    </head>
 
-    <body>
-      <input type="checkbox" id="nav-toggle" />
-      <SidebarMain />
-      <!-- Include the Sidebar component here -->
-      <div class="main-content">
-        <HeaderMain
-          :userProfile="userProfile"
-          :userName="userName"
-          :userRole="userRole"
-          title="Product Lists"
-        />
-        <main>
-          <div class="table-responsive">
-            <div class="container">
-              <div class="search-bar-product">
-                <div class="product-container">
-                  <input
-                    type="text"
-                    name="search"
-                    v-model="searchKeyword"
-                    placeholder="Search..."
-                    class="search-input"
-                  />
-                  <a href="#" class="search-btn">
-                    <i class="fas fa-search"></i>
-                  </a>
-                </div>
-                <div class="button-container">
-                  <button class="btn" @click="openPopup">
-                    <i class="fas fa-paper-plane mr-1"></i>Requsest Product
-                  </button>
-                </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  </head>
+
+  <body>
+    <input type="checkbox" id="nav-toggle" />
+    <SidebarMain />
+    <!-- Include the Sidebar component here -->
+    <div class="main-content">
+      <HeaderMain :userProfile="userProfile" :userName="userName" :userRole="userRole" title="Product Lists" />
+      <main>
+        <div class="table-responsive">
+          <div class="container">
+            <div class="search-bar-product">
+              <div class="product-container">
+                <input type="text" name="search" v-model="searchKeyword" placeholder="Search..." class="search-input" />
+                <a href="#" class="search-btn">
+                  <i class="fas fa-search"></i>
+                </a>
               </div>
-              <div class="table-container">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th><i class="fas fa-id-badge mr-1"></i> Product ID</th>
-                      <th><i class="fas fa-tag mr-1"></i> Product Name</th>
-                      <th><i class="fas fa-image mr-1"></i> Product Image</th>
-                      <th><i class="fas fa-building mr-1"></i> Company</th>
-                      <th class="description-column">
-                        <i class="fas fa-file-alt mr-1"></i> Description
-                      </th>
-                      <th><i class="fas fa-sort-amount-up mr-1"></i> Quantity</th>
-                    </tr>
-                  </thead>
-                  <tbody v-if="filteredProducts.length > 0">
-                    <tr v-for="(product, index) in filteredProducts" :key="index">
-                      <td style="color: rgb(61, 61, 190)">{{ product.productId }}</td>
-                      <td>{{ product.productName }}</td>
-                      <td>
-                        <img
-                          :src="getProductImageUrl(product.productId)"
-                          :alt="product.productName"
-                          style="max-width: 100px"
-                        />
-                      </td>
-                      <td>{{ product.company }}</td>
-                      <td class="description-column">
-                        <div v-if="product.description.length > 70">
-                          <div v-if="!product.showFullDescription">
-                            {{ product.description.slice(0, 70) }}...
-                            <span @click="toggleDescription(index)">
-                              <div style="color: blueviolet">Read more</div>
-                            </span>
-                          </div>
-                          <div v-else>
-                            {{ product.description }}
-                            <span @click="toggleDescription(index)">
-                              <div style="color: blueviolet">Show less</div>
-                            </span>
-                          </div>
+              <div class="button-container">
+                <button class="btn" @click="openPopup">
+                  <i class="las la-paper-plane mr-2"></i> Request Product
+                </button>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th><i class="fas fa-id-badge mr-1"></i> Product ID</th>
+                    <th><i class="fas fa-tag mr-1"></i> Product Name</th>
+                    <th><i class="fas fa-image mr-1"></i> Product Image</th>
+                    <th><i class="fas fa-building mr-1"></i> Company</th>
+                    <th class="description-column">
+                      <i class="fas fa-file-alt mr-1"></i> Description
+                    </th>
+                    <th><i class="fas fa-sort-amount-up mr-1"></i> Quantity</th>
+                  </tr>
+                </thead>
+                <tbody v-if="filteredProducts.length > 0">
+                  <tr v-for="(product, index) in filteredProducts" :key="index">
+                    <td style="color: rgb(61, 61, 190)">{{ product.productId }}</td>
+                    <td>{{ product.productName }}</td>
+                    <td>
+                      <img :src="getProductImageUrl(product.productId)" :alt="product.productName"
+                        style="max-width: 100px" />
+                    </td>
+                    <td>{{ product.company }}</td>
+                    <td class="description-column">
+                      <div v-if="product.description.length > 70">
+                        <div v-if="!product.showFullDescription">
+                          {{ product.description.slice(0, 70) }}...
+                          <span @click="toggleDescription(index)">
+                            <div style="color: blueviolet">Read more</div>
+                          </span>
                         </div>
                         <div v-else>
                           {{ product.description }}
+                          <span @click="toggleDescription(index)">
+                            <div style="color: blueviolet">Show less</div>
+                          </span>
                         </div>
-                      </td>
-                      <td>{{ product.quantity }}</td>
-                    </tr>
-                  </tbody>
-                  <tbody v-else>
-                    <tr>
-                      <td colspan="7" style="text-align: center">No data available</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                      </div>
+                      <div v-else>
+                        {{ product.description }}
+                      </div>
+                    </td>
+                    <td>{{ product.quantity }}</td>
+                  </tr>
+                </tbody>
+                <tbody v-else>
+                  <tr>
+                    <td colspan="7" style="text-align: center">No data available</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-        </main>
-      </div>
-    </body>
-    <div class="popup-overlay" v-if="showPopup">
-      <ProductRequest @close="closePopup" />
+        </div>
+      </main>
     </div>
+  </body>
+  <div class="popup-overlay" v-if="showPopup">
+    <ProductRequest @close="closePopup" />
+  </div>
+
   </html>
 </template>
 
@@ -115,6 +97,7 @@
 import SidebarMain from "@/views/head/components/Sidebar.vue";
 import HeaderMain from "@/views/head/components/HeaderMain.vue";
 import ProductRequest from "@/views/head/components/ProductRequest.vue";
+
 export default {
   name: "Product_Head",
   components: {
@@ -133,6 +116,7 @@ export default {
       products: [],
       searchKeyword: "",
       showPopup: false,
+      category: "",
     };
   },
   async mounted() {
@@ -140,7 +124,8 @@ export default {
     if (userData && userData.email) {
       this.email = userData.email; // Set email if available
 
-      fetch("http://localhost:3000/getUserInfo", {
+      // Fetch user information
+      fetch("http://localhost:3000/getUserInfoos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,23 +139,23 @@ export default {
           return response.json();
         })
         .then((data) => {
-          const { username, role } = data;
+          const { username, role, department, specialLab } = data;
           this.userName = username;
           this.userRole = role;
+          this.category = department || specialLab;
+          this.fetchProductsByCategory();
         })
         .catch((error) => {
           console.error("Error fetching user info:", error);
         });
+
+      // Update profile photo if available in sessionStorage
+      if (userData && userData.profilePhoto) {
+        this.userProfile.profilePhoto = userData.profilePhoto;
+      }
     } else {
       console.error("User data not found in sessionStorage");
     }
-
-    // Update profile photo if available in sessionStorage
-    if (userData && userData.profilePhoto) {
-      this.userProfile.profilePhoto = userData.profilePhoto;
-    }
-
-    this.fetchProducts();
   },
 
   computed: {
@@ -189,13 +174,17 @@ export default {
   },
 
   methods: {
-    async fetchProducts() {
+    async fetchProductsByCategory() {
       try {
-        const response = await fetch("http://localhost:3000/products");
-        const data = await response.json();
-        this.products = data.map((product) => {
-          return product;
+        const response = await fetch("http://localhost:3000/getProductsByCategory", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: this.email }),
         });
+        const data = await response.json();
+        this.products = data;
       } catch (error) {
         console.error("Error fetching products:", error);
       }
@@ -218,6 +207,7 @@ export default {
 };
 </script>
 
+
 <style scoped>
 * {
   padding: 0;
@@ -235,17 +225,20 @@ body {
   margin-top: 60px;
   padding: 2px 1.5rem;
   min-height: calc(100vh - 60px);
-  background: #e3e3e2;
+  background: #f5efff;
   border-radius: 5px;
   margin-left: 345px;
   transition: margin-left 300ms;
-  width: -100%; /* Adjust to match your sidebar width */
+  width: -100%;
+  /* Adjust to match your sidebar width */
   font-family: "Poppins", sans-serif;
 }
 
 .remove-btn {
-  background-color: #fddb00; /* Light red background */
-  color: #333; /* Dark text color */
+  background-color: #fddb00;
+  /* Light red background */
+  color: #333;
+  /* Dark text color */
   cursor: pointer;
   width: fit-content;
   height: fit-content;
@@ -260,12 +253,15 @@ body {
 }
 
 .remove-btn:hover {
-  background-color: #cc0000; /* Dark red background on hover */
-  color: #fff; /* White text color on hover */
+  background-color: #cc0000;
+  /* Dark red background on hover */
+  color: #fff;
+  /* White text color on hover */
 }
 
 .remove-btn i {
-  margin-right: 5px; /* Add some spacing between icon and text */
+  margin-right: 5px;
+  /* Add some spacing between icon and text */
 }
 
 .table-responsive {
@@ -276,8 +272,10 @@ body {
 }
 
 .edit {
-  background-color: #fddb00; /* Light red background */
-  color: #333; /* Dark text color */
+  background-color: #fddb00;
+  /* Light red background */
+  color: #333;
+  /* Dark text color */
   cursor: pointer;
   width: fit-content;
   height: fit-content;
@@ -292,12 +290,17 @@ body {
 }
 
 .edit:hover {
-  background-color: #cc0000; /* Dark red background on hover */
-  color: #fff; /* White text color on hover */
+  background-color: #cc0000;
+  /* Dark red background on hover */
+  color: #fff;
+  /* White text color on hover */
 }
+
 .table-container {
-  max-height: 600px; /* Set a maximum height for scroll */
-  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 600px;
+  /* Set a maximum height for scroll */
+  overflow-y: auto;
+  /* Enable vertical scrolling */
 }
 
 .table {
@@ -305,8 +308,10 @@ body {
   border-spacing: 0 10px;
   text-align: center;
   width: 100%;
-  box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-  border-radius: 8px; /* Rounded corners for aesthetics */
+  box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+  /* Add a subtle shadow */
+  border-radius: 8px;
+  /* Rounded corners for aesthetics */
 }
 
 /* Apply styles to table header cells */
@@ -319,25 +324,29 @@ body {
 }
 
 .table thead th {
-  color: #fff;
+  color: #1a1a60;
   position: sticky;
   top: 0;
-  background: #000000; /* Light gray background */
-  z-index: 1; /* Ensure header stays above content */
+  background: #c6b3e8;
+  z-index: 1;
+  /* Ensure header stays above content */
 }
 
 th,
 td {
   padding: 8px;
   border-bottom: 1px solid #ddd;
-  white-space: normal; /* Allow text wrapping */
-  overflow: hidden; /* Hide overflow text */
+  white-space: normal;
+  /* Allow text wrapping */
+  overflow: hidden;
+  /* Hide overflow text */
 }
 
 /* Set specific width for columns */
 .description-column {
   width: 40%;
-  max-width: 150px; /* Adjust max-width as needed */
+  max-width: 150px;
+  /* Adjust max-width as needed */
   text-align: left;
 }
 
@@ -359,24 +368,24 @@ td {
 }
 
 tr td {
-  padding: 23px 0; /* Adjust as needed */
+  padding: 23px 0;
+  /* Adjust as needed */
 }
+
 .btn {
   width: fit-content;
   height: fit-content;
   font-size: 16px;
   font-weight: bolder;
-  background: linear-gradient(to bottom, rgb(177, 178, 177), rgb(205, 205, 202));
+  background: linear-gradient(to bottom, #846ea9, #b9a7d8);
   color: rgb(0, 0, 0);
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
+
   border-radius: 30px;
   padding: 10px 20px;
 }
 
 .btn:hover {
-  background: linear-gradient(to bottom, rgb(102, 102, 102), rgb(102, 102, 102));
+  background: linear-gradient(to bottom, #270561, #4f16b1);
   font-weight: bolder;
   color: #fff;
 }
@@ -398,22 +407,27 @@ tr td {
   color: #fff;
 }
 
-#nav-toggle:checked ~ .main-content {
+#nav-toggle:checked~.main-content {
   margin-left: 70px;
 }
 
 .table-container::-webkit-scrollbar {
-  width: 10px; /* width of the entire scrollbar */
+  width: 10px;
+  /* width of the entire scrollbar */
 }
 
 .table-container::-webkit-scrollbar-track {
-  background: #fff; /* color of the tracking area */
+  background: #fff;
+  /* color of the tracking area */
 }
 
 .table-container::-webkit-scrollbar-thumb {
-  background-color: #000000; /* color of the scroll thumb */
-  border-radius: 20px; /* roundness of the scroll thumb */
-  border: 3px solid rgb(255, 255, 255); /* creates padding around scroll thumb */
+  background-color: #000000;
+  /* color of the scroll thumb */
+  border-radius: 20px;
+  /* roundness of the scroll thumb */
+  border: 3px solid rgb(255, 255, 255);
+  /* creates padding around scroll thumb */
 }
 
 /* Popup */
@@ -423,15 +437,17 @@ tr td {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent overlay */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* semi-transparent overlay */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* ensure it appears above other content */
+  z-index: 1000;
+  /* ensure it appears above other content */
 }
 
 .product-container {
-  background: #c7c4c4;
+  background: linear-gradient(to bottom, #846ea9, #b9a7d8);
   height: 45px;
   border-radius: 30px;
   padding: 10px 20px;
@@ -440,13 +456,9 @@ tr td {
   align-items: center;
   cursor: pointer;
   transition: 0.8s;
-  text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
 }
 
-.product-container:hover > .search-input {
+.product-container:hover>.search-input {
   width: 270px;
 }
 
@@ -461,24 +473,28 @@ tr td {
 }
 
 .product-container .search-btn .fas {
-  color: #5cbdbb;
+  color: #000000;
 }
 
 .button-container {
   display: flex;
-  gap: 10px; /* Adjust spacing between buttons */
+  gap: 10px;
+  /* Adjust spacing between buttons */
 }
 
 @keyframes hoverShake {
   0% {
     transform: skew(0deg, 0deg);
   }
+
   25% {
     transform: skew(5deg, 5deg);
   }
+
   75% {
     transform: skew(-5deg, -5deg);
   }
+
   100% {
     transform: skew(0deg, 0deg);
   }
@@ -494,7 +510,8 @@ tr td {
   }
 
   .main-content header {
-    width: calc(100% - 70px); /* Corrected */
+    width: calc(100% - 70px);
+    /* Corrected */
     left: 70px;
   }
 }
@@ -505,7 +522,7 @@ tr td {
     margin-left: 0rem;
   }
 
-  #nav-toggle:checked ~ .main-content {
+  #nav-toggle:checked~.main-content {
     margin-left: 0rem !important;
   }
 }

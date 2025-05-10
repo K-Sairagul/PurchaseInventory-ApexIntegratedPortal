@@ -38,7 +38,7 @@
             to="/dashboard/transfered_inventory"
             @click="setActive('/dashboard/transfered_inventory')"
           >
-            <span class="fas fa-exchange-alt"></span><span>Transferred</span>
+            <span class="las la-exchange-alt"></span><span>Transferred</span>
           </router-link>
         </li>
         <li :class="{ active: isActive('/dashboard/Arrange_Product_Inventory') }">
@@ -46,7 +46,7 @@
             to="/dashboard/Arrange_Product_Inventory"
             @click="setActive('/dashboard/Arrange_Product_Inventory')"
           >
-            <span><i class="fas fa-sort"></i></span><span>Arrange</span>
+            <span class="las la-sort"></span><span>Arrange</span>
           </router-link>
         </li>
         <li :class="{ active: isActive('/dashboard/buy_product_inventory') }">
@@ -54,7 +54,15 @@
             to="/dashboard/buy_product_inventory"
             @click="setActive('/dashboard/buy_product_inventory')"
           >
-            <span class="fas fa-shopping-bag"></span><span>Buy</span>
+            <span class="las la-shopping-bag"></span><span>Buy</span>
+          </router-link>
+        </li>
+        <li :class="{ active: isActive('/dashboard/Returned_Products') }">
+          <router-link
+            to="/dashboard/Returned_Products"
+            @click="setActive('/dashboard/Returned_Products')"
+          >
+            <span class="las la-undo-alt"></span> <span>Returned</span>
           </router-link>
         </li>
       </ul>
@@ -107,7 +115,7 @@ export default {
   height: 100%;
   left: 0;
   top: 0;
-  background: #838282;
+  background: #e5d9f2;
   z-index: 100;
   transition: width 300ms;
 }
@@ -145,7 +153,7 @@ export default {
 .sliderbar-menu a {
   padding-left: 1rem;
   display: block;
-  color: #f5f5f5;
+  color: #1a1a60;
   font-size: 1.1rem;
 }
 
@@ -157,7 +165,7 @@ export default {
 .sliderbar-menu li.active {
   padding-top: 1rem;
   padding-bottom: 1rem;
-  background: rgb(58, 58, 58);
+  background: rgb(205, 193, 255);
   box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
     inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
   padding: 10px 20px;

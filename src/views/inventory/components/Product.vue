@@ -4,18 +4,16 @@
       <meta charset="UTF-8" />
       <meta
         name="viewport"
-        content="width=device-width,initial-scale=1,maximum-scale=1"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
       />
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
       />
     </head>
-
     <body>
       <input type="checkbox" id="nav-toggle" />
       <SidebarMain />
-      <!-- Include the Sidebar component here -->
       <div class="main-content">
         <HeaderMain
           :userProfile="userProfile"
@@ -46,6 +44,9 @@
                   <button class="export-btn" @click="exportData">
                     <i class="fas fa-file-excel mr-1"></i>Export
                   </button>
+                  <button class="import-btn" @click="openImportPopup">
+                    <i class="fas fa-file-import mr-1"></i>Import
+                  </button>
                 </div>
               </div>
               <div class="table-container">
@@ -56,6 +57,7 @@
                       <th><i class="fas fa-tag mr-1"></i> Product Name</th>
                       <th><i class="fas fa-image mr-1"></i> Product Image</th>
                       <th><i class="fas fa-building mr-1"></i> Company</th>
+                      <th><i class="fas fa-sitemap mr-1"></i> Department</th>
                       <th class="description-column">
                         <i class="fas fa-file-alt mr-1"></i> Description
                       </th>
@@ -75,6 +77,7 @@
                         />
                       </td>
                       <td>{{ product.company }}</td>
+                      <td>{{ product.department }}</td>
                       <td class="description-column">
                         <div v-if="product.description.length > 70">
                           <div v-if="!product.showFullDescription">
@@ -104,7 +107,7 @@
                   </tbody>
                   <tbody v-else>
                     <tr>
-                      <td colspan="7" style="text-align: center">No data available</td>
+                      <td colspan="8" style="text-align: center">No data available</td>
                     </tr>
                   </tbody>
                 </table>
@@ -113,16 +116,19 @@
           </div>
         </main>
       </div>
+      <!-- Popup for user registration -->
+      <div class="popup-overlay" v-if="showPopup">
+        <ProductRegisteration
+          :isEditing="isEditing"
+          :editingProductId="editingProductId"
+          @close="closePopup"
+        />
+      </div>
+      <!-- Popup for import -->
+      <div class="popup-overlay" v-if="showImportPopup">
+        <ProductImport @close="closeImportPopup" @refresh="fetchProducts" />
+      </div>
     </body>
-
-    <!-- Popup for user registration -->
-    <div class="popup-overlay" v-if="showPopup">
-      <ProductRegisteration
-        :isEditing="isEditing"
-        :editingProductId="editingProductId"
-        @close="closePopup"
-      />
-    </div>
   </html>
 </template>
 
@@ -131,12 +137,15 @@ import { utils, writeFile } from "xlsx";
 import SidebarMain from "@/views/inventory/components/Sidebar.vue";
 import HeaderMain from "@/views/inventory/components/HeaderMain.vue";
 import ProductRegisteration from "@/views/inventory/components/ProductRegistration.vue";
+import ProductImport from "@/views/inventory/components/ProductImport.vue";
+
 export default {
   name: "Product_list",
   components: {
     SidebarMain,
     HeaderMain,
     ProductRegisteration,
+    ProductImport,
   },
   data() {
     return {
@@ -149,15 +158,16 @@ export default {
       title: "Product Lists",
       products: [],
       showPopup: false,
+      showImportPopup: false,
       searchKeyword: "",
-      editingProductId: null, // Track the ID of the product being edited
-      isEditing: false, // Flag to indicate edit mode
+      editingProductId: null,
+      isEditing: false,
     };
   },
   async mounted() {
     const userData = JSON.parse(sessionStorage.getItem("userData"));
     if (userData && userData.email) {
-      this.email = userData.email; // Set email if available
+      this.email = userData.email;
 
       fetch("http://localhost:3000/getUserInfo", {
         method: "POST",
@@ -184,7 +194,6 @@ export default {
       console.error("User data not found in sessionStorage");
     }
 
-    // Update profile photo if available in sessionStorage
     if (userData && userData.profilePhoto) {
       this.userProfile.profilePhoto = userData.profilePhoto;
     }
@@ -210,7 +219,7 @@ export default {
     openEditForm(productId) {
       this.editingProductId = productId;
       this.isEditing = true;
-      this.showPopup = true; // Show the popup with the registration form
+      this.showPopup = true;
     },
     async fetchProducts() {
       try {
@@ -229,11 +238,16 @@ export default {
     closePopup() {
       this.showPopup = false;
     },
+    openImportPopup() {
+      this.showImportPopup = true;
+    },
+    closeImportPopup() {
+      this.showImportPopup = false;
+    },
     getProductImageUrl(productId) {
       return `http://localhost:3000/products/images/${productId}`;
     },
     toggleDescription(index) {
-      // Use native JavaScript assignment to set the property
       this.filteredProducts[index].showFullDescription = !this.filteredProducts[index]
         .showFullDescription;
     },
@@ -241,9 +255,24 @@ export default {
     exportData() {
       if (this.products.length > 0) {
         const dataToExport = this.products.map((product) => {
-          const { productId, productName, company, description, quantity } = product;
-          const imageUrl = this.getProductImageUrl(product.productId); // Get image URL
-          return { productId, productName, company, description, quantity, imageUrl };
+          const {
+            productId,
+            productName,
+            company,
+            department,
+            description,
+            quantity,
+          } = product;
+          const imageUrl = this.getProductImageUrl(product.productId);
+          return {
+            productId,
+            productName,
+            company,
+            department,
+            description,
+            quantity,
+            imageUrl,
+          };
         });
 
         const worksheet = utils.json_to_sheet(dataToExport);
@@ -275,17 +304,20 @@ body {
   margin-top: 60px;
   padding: 2px 1.5rem;
   min-height: calc(100vh - 60px);
-  background: #e3e3e2;
+  background: #f5efff;
   border-radius: 5px;
   margin-left: 345px;
   transition: margin-left 300ms;
-  width: -100%; /* Adjust to match your sidebar width */
+  width: -100%;
+  /* Adjust to match your sidebar width */
   font-family: "Poppins", sans-serif;
 }
 
 .remove-btn {
-  background-color: #fddb00; /* Light red background */
-  color: #333; /* Dark text color */
+  background-color: #fddb00;
+  /* Light red background */
+  color: #333;
+  /* Dark text color */
   cursor: pointer;
   width: fit-content;
   height: fit-content;
@@ -300,12 +332,15 @@ body {
 }
 
 .remove-btn:hover {
-  background-color: #cc0000; /* Dark red background on hover */
-  color: #fff; /* White text color on hover */
+  background-color: #cc0000;
+  /* Dark red background on hover */
+  color: #fff;
+  /* White text color on hover */
 }
 
 .remove-btn i {
-  margin-right: 5px; /* Add some spacing between icon and text */
+  margin-right: 5px;
+  /* Add some spacing between icon and text */
 }
 
 .table-responsive {
@@ -316,8 +351,10 @@ body {
 }
 
 .edit {
-  background-color: #fddb00; /* Light red background */
-  color: #333; /* Dark text color */
+  background-color: #fddb00;
+  /* Light red background */
+  color: #333;
+  /* Dark text color */
   cursor: pointer;
   width: fit-content;
   height: fit-content;
@@ -332,12 +369,17 @@ body {
 }
 
 .edit:hover {
-  background-color: #cc0000; /* Dark red background on hover */
-  color: #fff; /* White text color on hover */
+  background-color: #cc0000;
+  /* Dark red background on hover */
+  color: #fff;
+  /* White text color on hover */
 }
+
 .table-container {
-  max-height: 600px; /* Set a maximum height for scroll */
-  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 600px;
+  /* Set a maximum height for scroll */
+  overflow-y: auto;
+  /* Enable vertical scrolling */
 }
 
 .table {
@@ -345,8 +387,10 @@ body {
   border-spacing: 0 10px;
   text-align: center;
   width: 100%;
-  box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-  border-radius: 8px; /* Rounded corners for aesthetics */
+  box-shadow: 2px 2px 2px 2px #ab93d1;
+  /* Add a subtle shadow */
+  border-radius: 8px;
+  /* Rounded corners for aesthetics */
 }
 
 /* Apply styles to table header cells */
@@ -359,25 +403,30 @@ body {
 }
 
 .table thead th {
-  color: #fff;
+  color: #1a1a60;
   position: sticky;
   top: 0;
-  background: #000000; /* Light gray background */
-  z-index: 1; /* Ensure header stays above content */
+  background: #c6b3e8;
+  /* Light gray background */
+  z-index: 1;
+  /* Ensure header stays above content */
 }
 
 th,
 td {
   padding: 8px;
   border-bottom: 1px solid #ddd;
-  white-space: normal; /* Allow text wrapping */
-  overflow: hidden; /* Hide overflow text */
+  white-space: normal;
+  /* Allow text wrapping */
+  overflow: hidden;
+  /* Hide overflow text */
 }
 
 /* Set specific width for columns */
 .description-column {
   width: 40%;
-  max-width: 150px; /* Adjust max-width as needed */
+  max-width: 150px;
+  /* Adjust max-width as needed */
   text-align: left;
 }
 
@@ -399,26 +448,39 @@ td {
 }
 
 tr td {
-  padding: 23px 0; /* Adjust as needed */
+  padding: 23px 0;
+  /* Adjust as needed */
 }
+
 .btn {
   width: fit-content;
   height: fit-content;
   font-size: 16px;
   font-weight: bolder;
-  background: linear-gradient(to bottom, rgb(177, 178, 177), rgb(205, 205, 202));
+  background: linear-gradient(to bottom, #846ea9, #b9a7d8);
   color: rgb(0, 0, 0);
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
+
   border-radius: 30px;
   padding: 10px 20px;
 }
 
 .btn:hover {
-  background: linear-gradient(to bottom, rgb(102, 102, 102), rgb(102, 102, 102));
+  background: linear-gradient(to bottom, #270561, #4f16b1);
   font-weight: bolder;
   color: #fff;
+}
+.import-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 30px;
+  margin-left: 10px;
+}
+
+.import-btn:hover {
+  background-color: #0056b3;
 }
 
 .export-btn {
@@ -443,17 +505,22 @@ tr td {
 }
 
 .table-container::-webkit-scrollbar {
-  width: 10px; /* width of the entire scrollbar */
+  width: 10px;
+  /* width of the entire scrollbar */
 }
 
 .table-container::-webkit-scrollbar-track {
-  background: #fff; /* color of the tracking area */
+  background: #fff;
+  /* color of the tracking area */
 }
 
 .table-container::-webkit-scrollbar-thumb {
-  background-color: #000000; /* color of the scroll thumb */
-  border-radius: 20px; /* roundness of the scroll thumb */
-  border: 3px solid rgb(255, 255, 255); /* creates padding around scroll thumb */
+  background-color: #000000;
+  /* color of the scroll thumb */
+  border-radius: 20px;
+  /* roundness of the scroll thumb */
+  border: 3px solid rgb(255, 255, 255);
+  /* creates padding around scroll thumb */
 }
 
 /* Popup */
@@ -463,15 +530,17 @@ tr td {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent overlay */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* semi-transparent overlay */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* ensure it appears above other content */
+  z-index: 1000;
+  /* ensure it appears above other content */
 }
 
 .product-container {
-  background: #c7c4c4;
+  background: linear-gradient(to bottom, #846ea9, #b9a7d8);
   height: 45px;
   border-radius: 30px;
   padding: 10px 20px;
@@ -480,10 +549,6 @@ tr td {
   align-items: center;
   cursor: pointer;
   transition: 0.8s;
-  text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
 }
 
 .product-container:hover > .search-input {
@@ -501,28 +566,28 @@ tr td {
 }
 
 .product-container .search-btn .fas {
-  color: #5cbdbb;
+  color: #000000;
 }
 
 .button-container {
   display: flex;
-  gap: 10px; /* Adjust spacing between buttons */
-}
-
-.import-btn {
-  /* Style the Import button as needed */
+  gap: 10px;
+  /* Adjust spacing between buttons */
 }
 
 @keyframes hoverShake {
   0% {
     transform: skew(0deg, 0deg);
   }
+
   25% {
     transform: skew(5deg, 5deg);
   }
+
   75% {
     transform: skew(-5deg, -5deg);
   }
+
   100% {
     transform: skew(0deg, 0deg);
   }
@@ -538,7 +603,8 @@ tr td {
   }
 
   .main-content header {
-    width: calc(100% - 70px); /* Corrected */
+    width: calc(100% - 70px);
+    /* Corrected */
     left: 70px;
   }
 }

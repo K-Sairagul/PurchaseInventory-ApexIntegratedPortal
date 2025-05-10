@@ -144,7 +144,7 @@
                   <tr v-for="task in tasks" :key="task._id">
                     <td class="task-name-cell">{{ task.taskName }}</td>
                     <td class="action-cell">
-                      <button @click="removeTask(task._id)">
+                      <button @click="removeTask(task._id)" class="remove-task-button">
                         <span class="las la-minus-circle remove-btn"></span>
                       </button>
                     </td>
@@ -318,7 +318,7 @@ export default {
 
 body {
   font-family: "Poppins", sans-serif;
-  background: #e3e3e2;
+  background: #f5efff;
 }
 
 .slidebar {
@@ -327,7 +327,7 @@ body {
   height: 100%;
   left: 0;
   top: 0;
-  background: #838282;
+  background: #e5d9f2;
   z-index: 100;
   transition: width 300ms;
 }
@@ -365,7 +365,7 @@ body {
 .sliderbar-menu a {
   padding-left: 1rem;
   display: block;
-  color: #f5f5f5;
+  color: #000000;
   font-size: 1.1rem;
 }
 
@@ -377,7 +377,7 @@ body {
 .sliderbar-menu a.active {
   padding-top: 1rem;
   padding-bottom: 1rem;
-  background: rgb(58, 58, 58);
+  background: #cdc1ff;
   border-radius: 30px 0px 0px 30px;
 }
 
@@ -416,7 +416,7 @@ header {
   display: flex;
   padding: 1rem 1.5rem;
   justify-content: space-between;
-  box-shadow: 2px 2px 4px rgb(140, 139, 139);
+  box-shadow: 2px 2px 4px #d5bfed;
   position: fixed;
   left: 345px;
   width: calc(100% - 345px);
@@ -503,22 +503,23 @@ main {
 .card-single {
   display: flex;
   justify-content: space-between;
-  background-color: #c8c8c8d9;
+  background-color: #d4bee4;
   padding: 2rem;
   border-radius: 2px;
+  color: #1a1a60;
 }
 
 .card-single div:last-child span {
   font-size: 3rem;
-  color: #838282;
+  color: #2a004e;
 }
 
 .card-single div:first-child span {
-  color: #011151;
+  color: #424642;
 }
 
 .card-single:last-child {
-  background: #838282;
+  background: #4a007e;
 }
 .card-single:last-child h1,
 .card-single:last-child div:first-child span,
@@ -534,7 +535,8 @@ main {
 }
 
 .card {
-  background: #c8c8c8d9;
+  background: #d4bee4;
+  color: #1a1a60;
   border-radius: 5px;
 }
 
@@ -551,30 +553,35 @@ main {
 }
 
 .card-header button {
-  background: #838282;
+  background: #4a007e;
   border-radius: 10px;
   color: white;
   font-size: 0.8rem;
   padding: 0.5rem 1rem;
-  border: 1px solid #838282;
+  border: 1px solid #4a007e; /* Match the border color with the background */
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.card-header button:hover {
+  background: #6a00b0; /* Slightly lighter shade for hover effect */
+  border-color: #6a00b0; /* Match the border color with the hover background */
 }
 
 /* task */
 
 .task-container {
-  background-image: linear-gradient(rgb(212, 217, 217), rgb(203, 198, 199));
-  border-radius: 5px;
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
-  border-radius: 30px;
-  padding: 10px 20px;
+  background-color: #d4bee4; /* Set background color */
+  border-radius: 10px; /* Increase border radius for smoother corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  padding: 20px; /* Increase padding for more space */
+  color: #1a1a60; /* Set text color for contrast */
 }
 .task-header h3 {
   padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: #1a1a60; /* Set header text color */
 }
 .task-body {
   display: flex;
@@ -603,7 +610,7 @@ main {
 
 /* Style for the input box when focused */
 .add-input:focus {
-  border-color: #565859; /* Change border color on focus */
+  border-color: #1a1a60; /* Change border color on focus */
 }
 
 .add-button {
@@ -664,6 +671,7 @@ li {
 .task-table th {
   padding: 8px; /* Adjust padding as needed */
   text-align: left; /* Align text to the left */
+  color: #1a1a60; /* Set header text color */
 }
 
 .task-table td.task-name-cell {
@@ -688,12 +696,13 @@ thead tr {
 
 thead td {
   font-weight: 700;
+  color: #2a004e;
 }
 
 td {
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
-  color: #222;
+  color: #1a1a60;
 }
 
 td .status {

@@ -49,6 +49,7 @@
                       <th><i class="fas fa-money-bill-alt mr-1"></i> Budget</th>
                       <th><i class="fas fa-check-circle mr-1"></i> Status</th>
                       <th><i class="fas fa-comment mr-1"></i> Feedback</th>
+                      <th><i class="fas fa-file-invoice mr-1"></i> Bill</th>
                     </tr>
                   </thead>
                   <tbody v-if="filteredProducts.length > 0">
@@ -71,11 +72,16 @@
                       <td>
                         {{ request.feedback ? request.feedback : "Not Approved yet" }}
                       </td>
+                      <td>
+                        <button @click="generateBill(request.reqno)" class="bill-btn">
+                          Generate Bill
+                        </button>
+                      </td>
                     </tr>
                   </tbody>
                   <tbody v-else>
                     <tr>
-                      <td colspan="7">No data available</td>
+                      <td colspan="8">No data available</td>
                     </tr>
                   </tbody>
                 </table>
@@ -103,11 +109,48 @@
           <button class="custom-send-button" @click="sendFeedback">Send</button>
         </div>
       </div>
+
+      <!-- Bill Popup -->
+      <div v-if="showBillPopup" class="custom-popup">
+        <div class="custom-feedback-modal">
+          <div class="custom-header-container">
+            <h2 class="custom-header-title">Bit Inventory Bill</h2>
+            <button class="custom-close-button" @click="closeBillPopup">
+              <i class="custom-close-icon fas fa-times"></i>
+            </button>
+          </div>
+          <div class="bill-details">
+            <p><strong>Request No:</strong> {{ billDetails.reqNo }}</p>
+            <p><strong>Email:</strong> {{ billDetails.email }}</p>
+            <table class="bill-table">
+              <thead>
+                <tr>
+                  <th>Product Name</th>
+                  <th>Company</th>
+                  <th>Quantity</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(product, index) in billDetails.products" :key="index">
+                  <td>{{ product.productName }}</td>
+                  <td>{{ product.company }}</td>
+                  <td>{{ product.quantity }}</td>
+                  <td>{{ product.status }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <button @click="generatePDF" class="pdf-button">Print as PDF</button>
+          </div>
+        </div>
+      </div>
     </body>
   </html>
 </template>
 
 <script>
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import SidebarMain from "@/views/inventory/components/Sidebar.vue";
 import HeaderMain from "@/views/inventory/components/HeaderMain.vue";
 
@@ -131,6 +174,13 @@ export default {
       showPopup: false,
       feedbackMessage: "",
       currentReqNo: null,
+      showBillPopup: false,
+      billDetails: {
+        reqNo: "",
+        email: "",
+        products: [],
+        budget: 0, // Add budget to billDetails
+      },
     };
   },
 
@@ -231,6 +281,59 @@ export default {
         console.error("Error updating request status:", error);
       }
     },
+    async generatePDF() {
+      const doc = new jsPDF();
+
+      // Add title
+      doc.setFontSize(18);
+      doc.text("Bit Inventory Bill", 10, 10);
+
+      // Add request details
+      doc.setFontSize(12);
+      doc.text(`Request No: ${this.billDetails.reqNo}`, 10, 20);
+      doc.text(`Email: ${this.billDetails.email}`, 10, 30);
+      doc.text(`Budget: ₹${this.billDetails.budget}`, 10, 40);
+
+      // Add table headers
+      const headers = ["Product Name", "Company", "Quantity", "Status"];
+      const rows = this.billDetails.products.map((product) => [
+        product.productName,
+        product.company,
+        product.quantity,
+        product.status,
+      ]);
+
+      // Add table to PDF using explicit autoTable import
+      autoTable(doc, {
+        startY: 50,
+        head: [headers],
+        body: rows,
+      });
+
+      // Save the PDF
+      doc.save(`Bill_${this.billDetails.reqNo}.pdf`);
+    },
+
+    async generateBill(reqNo) {
+      try {
+        const response = await fetch(`http://localhost:3000/getBillDetails`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ reqNo }),
+        });
+        const data = await response.json();
+        this.billDetails = data;
+        this.showBillPopup = true;
+      } catch (error) {
+        console.error("Error generating bill:", error);
+      }
+    },
+
+    closeBillPopup() {
+      this.showBillPopup = false;
+    },
   },
 };
 </script>
@@ -318,7 +421,7 @@ body {
   margin-top: 60px;
   padding: 2px 1.5rem;
   min-height: calc(100vh - 60px);
-  background: #e3e3e2;
+  background: #f5efff;
   border-radius: 5px;
   margin-left: 345px;
   transition: margin-left 300ms;
@@ -409,24 +512,21 @@ body {
   border-spacing: 0 10px;
   text-align: center;
   width: 100%;
-  box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+  box-shadow: 2px 2px 2px 2px #ab93d1; /* Add a subtle shadow */
   border-radius: 8px; /* Rounded corners for aesthetics */
 }
 
 /* Apply styles to table header cells */
 .table thead {
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
   border-radius: 30px;
   padding: 10px 20px;
 }
 
 .table thead th {
-  color: #fff;
+  color: #1a1a60;
   position: sticky;
   top: 0;
-  background: #000000; /* Light gray background */
+  background: #c6b3e8;
   z-index: 1; /* Ensure header stays above content */
 }
 
@@ -535,7 +635,7 @@ tr td {
 }
 
 .request-container {
-  background: #c7c4c4;
+  background: linear-gradient(to bottom, #846ea9, #b9a7d8);
   height: 45px;
   width: fit-content;
   margin-bottom: 20px;
@@ -546,10 +646,6 @@ tr td {
   align-items: center;
   cursor: pointer;
   transition: 0.8s;
-  text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
 }
 
 .request-container:hover > .search-input {
@@ -567,7 +663,7 @@ tr td {
 }
 
 .request-container .search-btn .fas {
-  color: #5cbdbb;
+  color: #000000;
 }
 
 .rupee-icon {
@@ -684,6 +780,81 @@ td .status {
   background-color: #45a049;
 }
 
+.custom-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.custom-feedback-modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 90%;
+}
+
+.custom-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.custom-header-title {
+  margin: 0;
+}
+
+.custom-close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.custom-close-icon {
+  font-size: 20px;
+}
+
+.bill-details {
+  margin-top: 20px;
+}
+
+.bill-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.bill-table th,
+.bill-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.bill-table th {
+  background-color: #f2f2f2;
+}
+.pdf-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.pdf-button:hover {
+  background-color: #45a049;
+}
 @keyframes hoverShake {
   0% {
     transform: skew(0deg, 0deg);

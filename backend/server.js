@@ -1,31 +1,35 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const multer = require('multer');
-
+require("dotenv").config();
+const express = require("express");
+const xlsx = require("xlsx");
+const path = require("path");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const multer = require("multer");
+const fs = require("fs");
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.json());
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useUnifiedTopology: true,
-  useNewUrlParser: true,
-})
-.then(() => {
-  console.log('Connected to MongoDB');
-})
-.catch((error) => {
-  console.error('MongoDB connection error:', error);
-});
+mongoose
+  .connect(process.env.MONGODB_URI, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+  })
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((error) => {
+    console.error("MongoDB connection error:", error);
+  });
 
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-db.once('open', () => {
-  console.log('Connected to MongoDB');
+db.on("error", console.error.bind(console, "MongoDB connection error:"));
+db.once("open", () => {
+  console.log("Connected to MongoDB");
 });
 
 // Create a Mongoose Schema and Model for user registration
@@ -37,7 +41,10 @@ const registrationSchema = new mongoose.Schema({
   organization: String,
   role: String,
   departmentName: String,
+  specialLabName: String,
+  permission: String, // This should work as expected
 });
+
 
 const Registration = mongoose.model('Registration', registrationSchema);
 
@@ -62,7 +69,8 @@ app.post('/checkEmail', async (req, res) => {
 // Route to handle user registration
 app.post('/register', async (req, res) => {
   try {
-    const { username, email, idNumber, phoneNumber, organization, role, departmentName } = req.body;
+    console.log("Request Body:", req.body); // Log the body to check permission value
+    const { username, email, idNumber, phoneNumber, organization, role, departmentName, specialLabName, permission } = req.body;
 
     // Check if email already exists
     const existingUser = await Registration.findOne({ email });
@@ -78,15 +86,19 @@ app.post('/register', async (req, res) => {
       organization,
       role,
       departmentName,
+      specialLabName,
+      permission, // Ensure permission is being passed correctly
     });
 
-    const savedRegistration = await newRegistration.save();
-    res.status(201).json(savedRegistration);
+    // Save the registration
+    await newRegistration.save();
+    res.status(200).json({ message: 'Registration successful' });
   } catch (error) {
-    console.error('Error saving registration:', error);
-    res.status(500).send('Internal Server Error');
+    console.error('Error during registration:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 // Route to get user role based on email
 app.post('/getUserRole', async (req, res) => {
@@ -233,30 +245,31 @@ app.delete('/removeUser/:userId', async (req, res) => {
 });
 
 
-// Define Mongoose Schema for Product
+// Mongoose Schema for Product
 const productSchema = new mongoose.Schema({
   productId: String,
   productName: String,
   company: String,
   description: String,
   quantity: Number,
-  productImage: { data: Buffer, contentType: String }, // Store image as Buffer data\
-  date: { type: Date, default: Date.now }
+  department: String,  // Added department field
+  productImage: { data: Buffer, contentType: String }, // Store image as Buffer data
+  date: { type: Date, default: Date.now },
 });
-const Product = mongoose.model('Product', productSchema);
+const Product = mongoose.model("Product", productSchema);
 
 // Multer configuration for file upload
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // Route to handle product creation including image upload
-app.post('/products', upload.single('productImage'), async (req, res) => {
+app.post("/products", upload.single("productImage"), async (req, res) => {
   try {
-    const { productId, productName, company, description, quantity } = req.body;
-    const productImage = {
-      data: req.file.buffer, // Image data as Buffer
-      contentType: req.file.mimetype, // Image MIME type
-    };
+    const { productId, productName, company, description, quantity, department } = req.body;
+    const productImage = req.file ? {
+      data: req.file.buffer,
+      contentType: req.file.mimetype,
+    } : null;
 
     const newProduct = new Product({
       productId,
@@ -264,17 +277,79 @@ app.post('/products', upload.single('productImage'), async (req, res) => {
       company,
       description,
       quantity,
+      department,  // Include department
       productImage,
     });
 
     const savedProduct = await newProduct.save();
-    res.status(201).send(savedProduct);
+    res.status(201).json(savedProduct);  // Send the saved product data as a JSON response
   } catch (error) {
-    console.error('Error saving product:', error);
-    res.status(500).send('Internal Server Error');
+    console.error("Error creating product:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
+// Import Excel Data to Database
+
+// Ensure uploads directory exists
+const uploadDir = "uploads/";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+// Multer setup for file upload
+const diffStorageXL = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const uploadXL = multer({ storage: diffStorageXL });
+
+// Import endpoint
+app.post("/import-products", uploadXL.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    console.log("Uploaded file path:", req.file.path);
+
+    const workbook = xlsx.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(worksheet);
+
+    console.log("Parsed Data:", data);
+
+    const products = data.map((item) => ({
+      productId: item["Product ID"] || "",
+      productName: item["Product Name"] || "",
+      company: item["Company"] || "",
+      description: item["Description"] || "",
+      quantity: item["Quantity"] || 0,
+      department: item["Department"] || "",
+      productImage: item["Product Image"] || null,
+    }));
+
+    const validProducts = products.filter(
+      (product) => product.productId && product.productName
+    );
+
+    if (validProducts.length === 0) {
+      return res.status(400).json({ error: "No valid products found in the file" });
+    }
+
+    await Product.insertMany(validProducts);
+    res.status(200).json({ message: "Products imported successfully" });
+  } catch (error) {
+    console.error("Error importing products:", error);
+    res.status(500).json({ error: "Error importing products", details: error.message });
+  }
+});
 
 app.get('/products', async (req, res) => {
   try {
@@ -286,19 +361,120 @@ app.get('/products', async (req, res) => {
   }
 });
 
-// Route to fetch product suggestions based on productName
-app.get('/fetchProducts', async (req, res) => {
-  const { productName } = req.query;
+
+// Category Mapping
+const categoryMapping = {
+  "Computer Science": ["Computer Science", "Mobile App Development", "AI Lab", "AR/VR Lab"],
+  "Physics": ["Physics", "Chemistry"],
+  "Electrical": ["Electrical And Electronics"]
+};
+
+
+// Get User Info based on Email for filltered products
+app.post("/getUserInfoos", async (req, res) => {
   try {
-    const products = await Product.find({
-      productName: { $regex: productName, $options: 'i' }, // Case insensitive search
-    }).limit(10); // Limiting to 10 results
-    res.status(200).send(products);
+    const { email } = req.body;
+    const user = await Registration.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ username: user.username, role: user.role, department: user.departmentName, specialLab: user.specialLabName });
   } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ message: "Server error", error });
   }
 });
+
+// Get Products Based on User's Category
+app.post("/getProductsByCategory", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Fetch user information
+    const user = await Registration.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the user has permission to view all products
+    if (user.permission === "Yes") {
+      // If permission is 'Yes', fetch all products
+      const products = await Product.find({});
+      return res.json(products);
+    }
+
+    // Otherwise, fetch products based on department or special lab
+    let category = null;
+
+    // Check if department or special lab matches a main category
+    for (const [mainCategory, subcategories] of Object.entries(categoryMapping)) {
+      if (subcategories.includes(user.departmentName) || subcategories.includes(user.specialLabName)) {
+        category = mainCategory;
+        break;
+      }
+    }
+
+    if (!category) {
+      return res.status(400).json({ message: "No matching category found" });
+    }
+
+    // Fetch products under the main category for users without permission to view all
+    const products = await Product.find({ department: category });
+    res.json(products);
+
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+
+// Route to fetch product suggestions based on email and category (department or special lab)
+app.get('/fetchProducts', async (req, res) => {
+  const { email, productName } = req.query;
+  try {
+    // Fetch user information based on email
+    const user = await Registration.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    let products = [];
+    
+    // Check if user has permission to view all products
+    if (user.permission === "Yes") {
+      // If permission is 'Yes', fetch all products
+      products = await Product.find({
+        productName: { $regex: productName, $options: 'i' }, // Case insensitive search
+      }).limit(10); // Limiting to 10 results
+    } else {
+      // If no permission, fetch products based on department or special lab
+      let category = null;
+
+      // Check if department or special lab matches a main category
+      for (const [mainCategory, subcategories] of Object.entries(categoryMapping)) {
+        if (subcategories.includes(user.departmentName) || subcategories.includes(user.specialLabName)) {
+          category = mainCategory;
+          break;
+        }
+      }
+
+      if (category) {
+        // Fetch products under the main category for users without permission to view all
+        products = await Product.find({
+          department: category,
+          productName: { $regex: productName, $options: 'i' }, // Case insensitive search
+        }).limit(10); // Limiting to 10 results
+      } else {
+        return res.status(400).json({ message: "No matching category found" });
+      }
+    }
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+});
+
 
 // Server-side route to serve product images
 app.get('/products/images/:productId', async (req, res) => {
@@ -324,7 +500,7 @@ app.get('/products/images/:productId', async (req, res) => {
 app.put('/products/:productId', upload.single('productImage'), async (req, res) => {
   try {
     const productId = req.params.productId;
-    const { productName, company, description, quantity } = req.body;
+    const { productName, company, description, quantity, department } = req.body; // Added department
     let productImage = req.file; // New image file, if uploaded
 
     // Fetch the existing product from the database
@@ -335,11 +511,12 @@ app.put('/products/:productId', upload.single('productImage'), async (req, res) 
       return res.status(404).send('Product not found');
     }
 
-    // Update product properties
+    // Update product properties, including department
     existingProduct.productName = productName;
     existingProduct.company = company;
     existingProduct.description = description;
     existingProduct.quantity = quantity;
+    existingProduct.department = department; // Update department field
 
     // Check if a new image was uploaded
     if (productImage) {
@@ -585,6 +762,18 @@ const transferProductSchema = new mongoose.Schema({
 const TransferProduct = mongoose.model('TransferProduct', transferProductSchema);
 
 
+// Returned Products Schema
+const returnedProductSchema = new mongoose.Schema({
+  reqNo: String,
+  productName: String,
+  quantity: Number,
+  email: String,
+  userName: String,
+  returnedDate: { type: Date, default: Date.now },
+});
+
+const ReturnedProduct = mongoose.model("ReturnedProduct", returnedProductSchema);
+
 // API endpoint to fetch all products
 app.get('/gettransferedproduct', async (req, res) => {
   try {
@@ -595,6 +784,64 @@ app.get('/gettransferedproduct', async (req, res) => {
     res.status(500).send({ error: 'Error fetching products' });
   }
 });
+
+
+// ✅ Get Transferred Products Based on Email
+app.post("/getTransferredProducts", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const transfers = await TransferProduct.find({ email });
+    res.json(transfers);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching transferred products" });
+  }
+});
+
+app.post("/returnProduct", async (req, res) => {
+  try {
+    const { reqNo, productId, productName, quantity, email, userName } = req.body;
+
+    // ✅ Ensure productId is an ObjectId
+    const productObjectId = new mongoose.Types.ObjectId(productId);
+
+    // ✅ Save to ReturnedProduct collection
+    const returnedProduct = new ReturnedProduct({ reqNo, productName, quantity, email, userName });
+    await returnedProduct.save();
+
+    // ✅ Increase product quantity in Product collection
+    await Product.updateOne(
+      { productName: productName },
+      { $inc: { quantity: quantity } } // Fix quantity update syntax
+    );
+
+    // ✅ Update TransferProduct status correctly
+    const updateResult = await TransferProduct.updateOne(
+      { reqNo, "products._id": productObjectId },
+      { $set: { "products.$.status": 1 } }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      return res.status(404).json({ message: "Product not found in transfer list" });
+    }
+
+    res.json({ success: true, message: "Product returned successfully" });
+  } catch (error) {
+    console.error("Error returning product:", error);
+    res.status(500).json({ message: "Error returning product" });
+  }
+});
+
+// ✅ Get All Returned Products
+app.get("/getReturnedProducts", async (req, res) => {
+  try {
+    const returnedProducts = await ReturnedProduct.find();
+    res.json(returnedProducts);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching returned products" });
+  }
+});
+
+
 
 // Define Mongoose Schema for BuyProduct
 const buyProductSchema = new mongoose.Schema({
@@ -895,7 +1142,71 @@ app.post('/arrange-update-status', async (req, res) => {
   }
 });
 
+app.post("/getBillDetails", async (req, res) => {
+  try {
+    const { reqNo } = req.body;
 
+    // Find the request based on reqNo
+    const request = await Request.findOne({ reqno: reqNo });
+    if (!request) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    // Split product names into an array
+    const productNames = request.productName.split(",").map(name => name.trim());
+
+    // Initialize array to store product details
+    const products = [];
+
+    // Check each product in the request
+    for (const productName of productNames) {
+      // Find the product in the Product collection
+      const product = await Product.findOne({ productName });
+
+      if (product) {
+        // If the product exists, check its quantity
+        if (product.quantity >= request.quantity) {
+          // Product is available in sufficient quantity
+          products.push({
+            productName,
+            company: product.company, // Include company name
+            quantity: request.quantity,
+            status: "Transferred",
+          });
+        } else {
+          // Product is available but insufficient quantity
+          products.push({
+            productName,
+            company: product.company, // Include company name
+            quantity: request.quantity,
+            status: "Arranged",
+          });
+        }
+      } else {
+        // Product not found in the Product collection
+        products.push({
+          productName,
+          company: "N/A", // Default company name
+          quantity: request.quantity,
+          status: "Buy",
+        });
+      }
+    }
+
+    // Prepare bill details
+    const billDetails = {
+      reqNo: request.reqno,
+      email: request.email,
+      budget: request.budget, // Include budget
+      products,
+    };
+
+    return res.status(200).json(billDetails);
+  } catch (error) {
+    console.error("Error generating bill:", error);
+    return res.status(500).json({ message: "Failed to generate bill", error: error.message });
+  }
+});
 
 
 // Start the server

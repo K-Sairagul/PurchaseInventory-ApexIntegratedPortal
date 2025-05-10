@@ -162,7 +162,7 @@ header {
   top: 0;
   z-index: 100;
   transition: left 300ms;
-  background: #838282;
+  background: #e5d9f2;
 }
 
 #nav-toggle {
@@ -170,7 +170,7 @@ header {
 }
 
 header h2 {
-  color: #222;
+  color: #1a1a60;
 }
 
 header label span {
@@ -218,6 +218,7 @@ header label span {
 }
 
 .user-info {
+  color: #1a1a60;
   font-family: "Philosopher", sans-serif;
   font-weight: 700;
   font-style: normal;

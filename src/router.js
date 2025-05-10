@@ -18,8 +18,10 @@ import Transfered_Inventory from './views/inventory/components/Transfered.vue';
 import Buy_Product_Inventory from './views/inventory/components/BuyProduct.vue';
 import Buy_Product_Member from './views/member/components/BuyProduct.vue';
 import Buy_Product_Head from './views/head/components/BuyProduct.vue';
+import borrowed_Products_Head from './views/head/components/borrowedProducts.vue';
 import Arrange_Product_Inventory from './views/inventory/components/ArrangeProduct.vue';
-
+import Returned_Products from './views/inventory/components/ReturnedProducts.vue';
+import borrowed_Products_Member from './views/member/components/borrowedProducts.vue';
 
 const routes = [
   {
@@ -186,6 +188,42 @@ const routes = [
     },
   },
   {
+    path: '/dashboard/borrowed_Products_Member',
+    name: 'borrowed_Products_Member',
+    component: borrowed_Products_Member,
+    meta: {
+      title: 'borrowed_Products_Member Page',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/dashboard/Buy_Product_Head',
+    name: 'Buy_Product_Head',
+    component: Buy_Product_Head,
+    meta: {
+      title: 'Buy_Product_Head Page',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/dashboard/borrowed_Products_Head',
+    name: 'borrowed_Products_Head',
+    component: borrowed_Products_Head,
+    meta: {
+      title: 'borrowed_Products_Head Page',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/dashboard/Returned_Products',
+    name: 'Returned_Products',
+    component: Returned_Products,
+    meta: {
+      title: 'Returned_Products Page',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/unauthorized',
     name: 'UnauthorizedPage',
     component: UnauthorizedPage,
@@ -194,6 +232,7 @@ const routes = [
       requiresAuth: true,
     },
   },
+  
   
 ];
 

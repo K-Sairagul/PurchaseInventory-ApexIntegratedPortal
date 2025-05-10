@@ -41,7 +41,7 @@
                 </div>
                 <div class="button-container">
                   <button class="btn" @click="openPopup">
-                    <i class="fas fa-paper-plane mr-1"></i>Requsest Product
+                    <i class="las la-paper-plane mr-2"></i> Request Product
                   </button>
                 </div>
               </div>
@@ -130,6 +130,7 @@ export default {
       },
       userName: "",
       userRole: "",
+      userCategory: "",
       products: [],
       searchKeyword: "",
       showPopup: false,
@@ -140,27 +141,24 @@ export default {
     if (userData && userData.email) {
       this.email = userData.email; // Set email if available
 
-      fetch("http://localhost:3000/getUserInfo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: userData.email }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          const { username, role } = data;
-          this.userName = username;
-          this.userRole = role;
-        })
-        .catch((error) => {
-          console.error("Error fetching user info:", error);
+      // Fetch user role and category information
+      try {
+        const response = await fetch("http://localhost:3000/getUserInfoos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: userData.email }),
         });
+        if (!response.ok) throw new Error("Failed to fetch user info");
+        const data = await response.json();
+        const { username, role, departmentName, specialLabName } = data;
+        this.userName = username;
+        this.userRole = role;
+        this.userCategory = departmentName || specialLabName; // Assign category based on department or lab
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
     } else {
       console.error("User data not found in sessionStorage");
     }
@@ -170,6 +168,7 @@ export default {
       this.userProfile.profilePhoto = userData.profilePhoto;
     }
 
+    // Fetch products based on user role and category
     this.fetchProducts();
   },
   computed: {
@@ -190,11 +189,21 @@ export default {
   methods: {
     async fetchProducts() {
       try {
-        const response = await fetch("http://localhost:3000/products");
-        const data = await response.json();
-        this.products = data.map((product) => {
-          return product;
+        let url = "http://localhost:3000/products";
+        // Modify the URL based on user role and category
+        if (this.userRole !== "Manager") {
+          url = `http://localhost:3000/getProductsByCategory`; // Adjust the backend route to handle role-based fetching
+        }
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: this.email }),
         });
+        const data = await response.json();
+        this.products = data;
       } catch (error) {
         console.error("Error fetching products:", error);
       }
@@ -217,6 +226,7 @@ export default {
 };
 </script>
 
+
 <style scoped>
 * {
   padding: 0;
@@ -234,17 +244,20 @@ body {
   margin-top: 60px;
   padding: 2px 1.5rem;
   min-height: calc(100vh - 60px);
-  background: #e3e3e2;
+  background: #f5efff;
   border-radius: 5px;
   margin-left: 345px;
   transition: margin-left 300ms;
-  width: -100%; /* Adjust to match your sidebar width */
+  width: -100%;
+  /* Adjust to match your sidebar width */
   font-family: "Poppins", sans-serif;
 }
 
 .remove-btn {
-  background-color: #fddb00; /* Light red background */
-  color: #333; /* Dark text color */
+  background-color: #fddb00;
+  /* Light red background */
+  color: #333;
+  /* Dark text color */
   cursor: pointer;
   width: fit-content;
   height: fit-content;
@@ -259,12 +272,15 @@ body {
 }
 
 .remove-btn:hover {
-  background-color: #cc0000; /* Dark red background on hover */
-  color: #fff; /* White text color on hover */
+  background-color: #cc0000;
+  /* Dark red background on hover */
+  color: #fff;
+  /* White text color on hover */
 }
 
 .remove-btn i {
-  margin-right: 5px; /* Add some spacing between icon and text */
+  margin-right: 5px;
+  /* Add some spacing between icon and text */
 }
 
 .table-responsive {
@@ -275,8 +291,10 @@ body {
 }
 
 .edit {
-  background-color: #fddb00; /* Light red background */
-  color: #333; /* Dark text color */
+  background-color: #fddb00;
+  /* Light red background */
+  color: #333;
+  /* Dark text color */
   cursor: pointer;
   width: fit-content;
   height: fit-content;
@@ -291,12 +309,17 @@ body {
 }
 
 .edit:hover {
-  background-color: #cc0000; /* Dark red background on hover */
-  color: #fff; /* White text color on hover */
+  background-color: #cc0000;
+  /* Dark red background on hover */
+  color: #fff;
+  /* White text color on hover */
 }
+
 .table-container {
-  max-height: 600px; /* Set a maximum height for scroll */
-  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 600px;
+  /* Set a maximum height for scroll */
+  overflow-y: auto;
+  /* Enable vertical scrolling */
 }
 
 .table {
@@ -304,8 +327,10 @@ body {
   border-spacing: 0 10px;
   text-align: center;
   width: 100%;
-  box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-  border-radius: 8px; /* Rounded corners for aesthetics */
+  box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+  /* Add a subtle shadow */
+  border-radius: 8px;
+  /* Rounded corners for aesthetics */
 }
 
 /* Apply styles to table header cells */
@@ -318,25 +343,29 @@ body {
 }
 
 .table thead th {
-  color: #fff;
+  color: #1a1a60;
   position: sticky;
   top: 0;
-  background: #000000; /* Light gray background */
-  z-index: 1; /* Ensure header stays above content */
+  background: #c6b3e8;
+  z-index: 1;
+  /* Ensure header stays above content */
 }
 
 th,
 td {
   padding: 8px;
   border-bottom: 1px solid #ddd;
-  white-space: normal; /* Allow text wrapping */
-  overflow: hidden; /* Hide overflow text */
+  white-space: normal;
+  /* Allow text wrapping */
+  overflow: hidden;
+  /* Hide overflow text */
 }
 
 /* Set specific width for columns */
 .description-column {
   width: 40%;
-  max-width: 150px; /* Adjust max-width as needed */
+  max-width: 150px;
+  /* Adjust max-width as needed */
   text-align: left;
 }
 
@@ -358,24 +387,24 @@ td {
 }
 
 tr td {
-  padding: 23px 0; /* Adjust as needed */
+  padding: 23px 0;
+  /* Adjust as needed */
 }
+
 .btn {
   width: fit-content;
   height: fit-content;
   font-size: 16px;
   font-weight: bolder;
-  background: linear-gradient(to bottom, rgb(177, 178, 177), rgb(205, 205, 202));
+  background: linear-gradient(to bottom, #846ea9, #b9a7d8);
   color: rgb(0, 0, 0);
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
+
   border-radius: 30px;
   padding: 10px 20px;
 }
 
 .btn:hover {
-  background: linear-gradient(to bottom, rgb(102, 102, 102), rgb(102, 102, 102));
+  background: linear-gradient(to bottom, #270561, #4f16b1);
   font-weight: bolder;
   color: #fff;
 }
@@ -397,22 +426,27 @@ tr td {
   color: #fff;
 }
 
-#nav-toggle:checked ~ .main-content {
+#nav-toggle:checked~.main-content {
   margin-left: 70px;
 }
 
 .table-container::-webkit-scrollbar {
-  width: 10px; /* width of the entire scrollbar */
+  width: 10px;
+  /* width of the entire scrollbar */
 }
 
 .table-container::-webkit-scrollbar-track {
-  background: #fff; /* color of the tracking area */
+  background: #fff;
+  /* color of the tracking area */
 }
 
 .table-container::-webkit-scrollbar-thumb {
-  background-color: #000000; /* color of the scroll thumb */
-  border-radius: 20px; /* roundness of the scroll thumb */
-  border: 3px solid rgb(255, 255, 255); /* creates padding around scroll thumb */
+  background-color: #000000;
+  /* color of the scroll thumb */
+  border-radius: 20px;
+  /* roundness of the scroll thumb */
+  border: 3px solid rgb(255, 255, 255);
+  /* creates padding around scroll thumb */
 }
 
 /* Popup */
@@ -422,15 +456,17 @@ tr td {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent overlay */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* semi-transparent overlay */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* ensure it appears above other content */
+  z-index: 1000;
+  /* ensure it appears above other content */
 }
 
 .product-container {
-  background: #c7c4c4;
+  background: linear-gradient(to bottom, #846ea9, #b9a7d8);
   height: 45px;
   border-radius: 30px;
   padding: 10px 20px;
@@ -439,13 +475,9 @@ tr td {
   align-items: center;
   cursor: pointer;
   transition: 0.8s;
-  text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 4px 4px 6px 0 rgba(255, 255, 255, 0.3),
-    -4px -4px 6px 0 rgba(116, 125, 136, 0.2),
-    inset -4px -4px 6px 0 rgba(255, 255, 255, 0.2), inset 4px 4px 6px 0 rgba(0, 0, 0, 0.2);
 }
 
-.product-container:hover > .search-input {
+.product-container:hover>.search-input {
   width: 270px;
 }
 
@@ -460,28 +492,28 @@ tr td {
 }
 
 .product-container .search-btn .fas {
-  color: #5cbdbb;
+  color: #000000;
 }
 
 .button-container {
   display: flex;
-  gap: 10px; /* Adjust spacing between buttons */
-}
-
-.import-btn {
-  /* Style the Import button as needed */
+  gap: 10px;
+  /* Adjust spacing between buttons */
 }
 
 @keyframes hoverShake {
   0% {
     transform: skew(0deg, 0deg);
   }
+
   25% {
     transform: skew(5deg, 5deg);
   }
+
   75% {
     transform: skew(-5deg, -5deg);
   }
+
   100% {
     transform: skew(0deg, 0deg);
   }
@@ -497,7 +529,8 @@ tr td {
   }
 
   .main-content header {
-    width: calc(100% - 70px); /* Corrected */
+    width: calc(100% - 70px);
+    /* Corrected */
     left: 70px;
   }
 }
@@ -508,7 +541,7 @@ tr td {
     margin-left: 0rem;
   }
 
-  #nav-toggle:checked ~ .main-content {
+  #nav-toggle:checked~.main-content {
     margin-left: 0rem !important;
   }
 }

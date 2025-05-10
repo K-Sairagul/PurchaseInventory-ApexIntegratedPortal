@@ -8,10 +8,29 @@ const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
 
+
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
+
+
+// === API ROUTES ===
+// Example API route (you can add your own here)
+app.get('/api/hello', (req, res) => {
+  res.json({ message: 'Hello from the backend!' });
+});
+
+// === STATIC FRONTEND FILES ===
+// Serve static files from the frontend dist directory
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Catch-all handler: for any request that doesn't match an API route,
+// send back the Vue frontend's index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
 
 // MongoDB connection
 mongoose

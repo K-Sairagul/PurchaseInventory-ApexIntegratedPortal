@@ -15,13 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 
-// Serve static files from React build
-app.use(express.static(path.join(__dirname, '../src/build')));
 
-// Fallback for client-side routing
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../src/build/index.html'));
-});
 
 
 // MongoDB connection
